@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SessionScreen from '../screens/SessionScreen';
+import LobbyScreen from '../screens/LobbyScreen';
 
 
 export type RootStackParamList = {
@@ -28,6 +29,8 @@ const AppNavigator = () => {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Session" component={SessionScreen} />
+        <Stack.Screen name="Lobby" component={LobbyScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
