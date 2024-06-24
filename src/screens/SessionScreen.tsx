@@ -30,7 +30,7 @@ const SessionScreen: React.FC<Props> = ({ navigation }) => {
         const player = JSON.parse(playerString);
         const email = player.email;
 
-        const party = new Party([email], 100, email, false);
+        const party = new Party([email], email, false);
         const createdParty = await party.addParty();
         if (createdParty && createdParty.id) {
           return createdParty.id;
@@ -54,11 +54,11 @@ const SessionScreen: React.FC<Props> = ({ navigation }) => {
           navigation.navigate('LobbyScreen', { partyId: id });
         }
       }}>
-        <Text style={styles.buttonText}>Créer une session</Text>
+        <Text style={styles.buttonText}>Créer une Partie</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SelectSession')}>
-        <Text style={styles.buttonText}>Rejoindre une session</Text>
+        <Text style={styles.buttonText}>Rejoindre une Partie</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={async () => {
@@ -79,13 +79,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   image: {
-    width: 300,
-    height: 250,
+    width: 450,
+    height: 350,
     marginTop: -150,
-    marginBottom: 100,
+    marginBottom: 0,
   },
   button: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: 'grey',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
