@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Image,
@@ -8,17 +8,17 @@ import {
   Text,
   Button,
 } from 'react-native';
-import Svg, {Line, Text as SvgText} from 'react-native-svg';
-import firestore, {
-  FirebaseFirestoreTypes,
-} from '@react-native-firebase/firestore';
-import {Player} from '../models/Player';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
+import Svg, { Line, Text as SvgText } from 'react-native-svg';
+import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+
+import { Player } from '../models/Player';
+
 const PositionRef = firestore().collection('Position');
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const bonhomme1 = require('../../images/bonhomme1.png');
 
 type RootStackParamList = {
@@ -35,10 +35,10 @@ type GameScreenProps = {
 };
 
 const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
-  const [email, setEmail] = useState('');
-  const [mysteryNumber, setMysteryNumber] = useState('');
-  const [eliminateNumber, setEliminateNumber] = useState('');
-  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState<string>('');
+  const [positions, setPositions] = useState<
+    { x: number; y: number; repereX: number; repereY: number }[]
+  >([]);
   const { partyId } = route.params;
 
   useEffect(() => {
@@ -46,8 +46,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
       try {
         const playerString = await AsyncStorage.getItem('Player');
         if (playerString !== null) {
-          const player = JSON.parse(playerString);
-          setEmail(player.email);
+          const player = JSON.parse(playerString) as Player;
+          setEmail(player.email.replace('.', ','));
         }
       } catch (error) {
         console.log(error);
@@ -56,36 +56,47 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
 
     fetchEmail();
   }, []);
-  
-  
+
   const xMid = width / 2;
   const yMid = height / 2;
-  const xScale = width / 20; // Chaque unité sur l'axe des x
-  const yScale = height / 20; // Chaque unité sur l'axe des y
-
-  const [positions, setPositions] = useState<
-    {x: number; y: number; repereX: number; repereY: number}[]
-  >([]);
+  const xScale = width / 20;
+  const yScale = height / 20;
 
   const handlePress = (event: any) => {
     if (positions.length < 5) {
-      const {locationX, locationY} = event.nativeEvent;
+      const { locationX, locationY } = event.nativeEvent;
       const x = (locationX - xMid) / xScale;
       const y = (yMid - locationY) / yScale;
 
-      setPositions(prevPositions => [
+      setPositions((prevPositions) => [
         ...prevPositions,
-        {x: locationX, y: locationY, repereX: x, repereY: y},
+        { x: locationX, y: locationY, repereX: x, repereY: y },
       ]);
     }
   };
 
-  const handleButtonPress = () => {
-    console.log('Button Pressed');
-    // Add your desired functionality here
+  const addPosition = async () => {
+    try {
+      const docRef = PositionRef.doc(partyId);
+      const doc = await docRef.get();
+
+      if (doc.exists) {
+        const data = doc.data();
+        const updatedData = {
+          ...data,
+          [email]: positions,
+        };
+        await docRef.update(updatedData);
+      } else {
+        await docRef.set({
+          [email]: positions,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  // Fonction pour rendre les graduations sur l'axe des x
   const renderXAxisGraduations = () => {
     const lines = [];
     for (let i = -10; i <= 10; i++) {
@@ -98,28 +109,26 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
           x2={xPos}
           y2={yMid + 5}
           stroke="black"
-          strokeWidth="1"
-        />,
+          strokeWidth={1}
+        />
       );
       if (i !== 0) {
-        // Skip the origin
         lines.push(
           <SvgText
             key={`x-text-${i}`}
             x={xPos}
             y={yMid + 15}
-            fontSize="10"
+            fontSize={10}
             fill="black"
             textAnchor="middle">
             {i}
-          </SvgText>,
+          </SvgText>
         );
       }
     }
     return lines;
   };
 
-  // Fonction pour rendre les graduations sur l'axe des y
   const renderYAxisGraduations = () => {
     const lines = [];
     for (let i = -10; i <= 10; i++) {
@@ -132,52 +141,46 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
           x2={xMid + 5}
           y2={yPos}
           stroke="black"
-          strokeWidth="1"
-        />,
+          strokeWidth={1}
+        />
       );
       if (i !== 0) {
-        // Skip the origin
         lines.push(
           <SvgText
             key={`y-text-${i}`}
             x={xMid + 15}
             y={yPos + 3}
-            fontSize="10"
+            fontSize={10}
             fill="black"
             textAnchor="middle">
             {i}
-          </SvgText>,
+          </SvgText>
         );
       }
     }
     return lines;
   };
 
-
-
   return (
     <TouchableWithoutFeedback onPress={handlePress}>
       <View style={styles.container}>
         <Svg height={height} width={width} style={StyleSheet.absoluteFill}>
-          {/* Axe des abscisses */}
           <Line
-            x1="0"
+            x1={0}
             y1={yMid}
             x2={width}
             y2={yMid}
             stroke="black"
-            strokeWidth="2"
+            strokeWidth={2}
           />
-          {/* Axe des ordonnées */}
           <Line
             x1={xMid}
-            y1="0"
+            y1={0}
             x2={xMid}
             y2={height}
             stroke="black"
-            strokeWidth="2"
+            strokeWidth={2}
           />
-          {/* Ajouter les graduations sur les axes */}
           {renderXAxisGraduations()}
           {renderYAxisGraduations()}
         </Svg>
@@ -206,9 +209,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
           <View style={styles.buttonContainer}>
             <Button
               title="Button"
-              onPress={async () => {
-                addPosition(positions);
-              }}
+              onPress={addPosition}
             />
           </View>
         )}
@@ -216,19 +217,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
     </TouchableWithoutFeedback>
   );
 };
-
-// ajoute un joueur a une partie
-const addPosition = async (positions: {}) => {
-  const email = await new Player().getPlayerEmail();
-  console.log(email);
-  try {
-    PositionRef.add({
-      [email.email]: positions,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-}
 
 const styles = StyleSheet.create({
   container: {
