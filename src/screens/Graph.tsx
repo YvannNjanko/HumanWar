@@ -71,6 +71,8 @@ const Graph: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [circle]);
+  
+  
 
   // Fonction pour rendre les graduations sur l'axe des x
   const renderXAxisGraduations = () => {
@@ -144,16 +146,6 @@ const Graph: React.FC = () => {
     <TouchableWithoutFeedback onPress={handlePress}>
       <View style={styles.container}>
         {/* Image en arrière-plan */}
-        <Image
-          source={bonhomme1}
-          style={styles.image}
-          onLayout={onImageLayout}
-        />
-        <Image
-          source={bonhomme1}
-          style={styles.image}
-          onLayout={onImageLayout2}
-        />
         <Image
           source={bonhomme1}
           style={styles.image}
