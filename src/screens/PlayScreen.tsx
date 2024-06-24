@@ -129,21 +129,7 @@ const PlayScreen: React.FC<{route: {params: {partyId: string}}}> = ({
     setImagePosition({x: imageX, y: imageY});
     setImageSize({width, height});
   };
-  const onImageLayout2 = (event: LayoutChangeEvent) => {
-    const {x, y, width, height} = event.nativeEvent.layout;
-    const imageX = (x - xMid) / xScale;
-    const imageY = (yMid - y) / yScale;
-    setImagePosition({x: imageX, y: imageY});
-    setImageSize({width, height});
-  };
-  const onImageLayout3 = (event: LayoutChangeEvent) => {
-    const {x, y, width, height} = event.nativeEvent.layout;
-    const imageX = (x - xMid) / xScale;
-    const imageY = (yMid - y) / yScale;
-    setImagePosition({x: imageX, y: imageY});
-    setImageSize({width, height});
-  };
-
+  
   useEffect(() => {
     if (circle) {
       const timer = setTimeout(() => {
@@ -240,7 +226,7 @@ const PlayScreen: React.FC<{route: {params: {partyId: string}}}> = ({
                       top: position.y - 50,
                     },
                   ]}>
-                  <Image source={bonhomme1} style={styles.image} />
+                  <Image source={bonhomme1} onLayout={onImageLayout} style={styles.image} />
                 </View>
                 ))}
               </React.Fragment>
