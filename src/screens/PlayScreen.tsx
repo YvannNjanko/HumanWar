@@ -226,12 +226,17 @@ const PlayScreen: React.FC<{route: {params: {partyId: string}}}> = ({
             email !== currentUserEmail && (
               <React.Fragment key={index}>
                 {playerPositions.map((position, posIndex) => (
-                  <Image
-                    key={posIndex}
-                    source={bonhomme1}
-                    style={styles.image}
-                    onLayout={onImageLayout3}
-                  />
+                  <View
+                  key={posIndex}
+                  style={[
+                    styles.box,
+                    {
+                      left: position.x - 50,
+                      top: position.y - 50,
+                    },
+                  ]}>
+                  <Image source={bonhomme1} style={styles.image} />
+                </View>
                 ))}
               </React.Fragment>
             ),
@@ -283,6 +288,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     position: 'absolute',
+    backgroundColor: 'red',
   },
   image: {
     width: '100%',
