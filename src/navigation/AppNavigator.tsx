@@ -31,7 +31,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Session" component={SessionScreen} />
-        <Stack.Screen name="Lobby" component={LobbyScreen} />
+        <Stack.Screen name="LobbyScreen" component={LobbyScreen} />
         <Stack.Screen name="SalleAttente" component={ListeAttente} />
         <Stack.Screen name="SelectSession" component={JoinSessionScreen} />
 
