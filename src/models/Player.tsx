@@ -4,11 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 class Player {
   name: string | null;
   email: string;
-  maxScore: number | null;
   constructor(name: string | null = "", maxScore: number | null = 0, email: string = "") {
     this.name = name;
     this.email = email;
-    this.maxScore = maxScore;
   }
 
   public addPlayer = async (player: Player) => {
@@ -16,7 +14,6 @@ class Player {
     const playerData = {
       name: player.name,
       email: player.email,
-      maxScore: player.maxScore,
     };
     try {
       const querySnapshot = await playersRef.where("email","==",player.email).get();

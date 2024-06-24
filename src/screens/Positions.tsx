@@ -1,35 +1,50 @@
-import React, { useRef, useState } from 'react';
-import { View, Image, PanResponder, StyleSheet, Dimensions, Text } from 'react-native';
-import Svg, { Line, Text as SvgText } from 'react-native-svg';
+import React, {useState} from 'react';
+import {
+  View,
+  Image,
+  StyleSheet,
+  Dimensions,
+  TouchableWithoutFeedback,
+  Text,
+  Button,
+} from 'react-native';
+import Svg, {Line, Text as SvgText} from 'react-native-svg';
+import firestore, {
+  FirebaseFirestoreTypes,
+} from '@react-native-firebase/firestore';
+import {Player} from '../models/Player';
 
-const { width, height } = Dimensions.get('window');
+const PositionRef = firestore().collection('Position');
+const {width, height} = Dimensions.get('window');
 const bonhomme1 = require('../../images/bonhomme1.png');
 
-const DraggableImage: React.FC = () => {
+const DraggableImages: React.FC = () => {
   const xMid = width / 2;
   const yMid = height / 2;
   const xScale = width / 20; // Chaque unité sur l'axe des x
   const yScale = height / 20; // Chaque unité sur l'axe des y
 
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [reperePosition, setReperePosition] = useState({ x: 0, y: 0 });
+  const [positions, setPositions] = useState<
+    {x: number; y: number; repereX: number; repereY: number}[]
+  >([]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (event, gestureState) => {
-        const newPosX = gestureState.dx;
-        const newPosY = gestureState.dy;
-        const xRepere = (xMid + newPosX - xMid) / xScale;
-        const yRepere = (yMid - (yMid + newPosY)) / yScale;
-        setPosition({ x: newPosX, y: newPosY });
-        setReperePosition({ x: xRepere, y: yRepere });
-      },
-      onPanResponderRelease: () => {
-        // Optionally, reset the position here
-      },
-    })
-  ).current;
+  const handlePress = (event: any) => {
+    if (positions.length < 5) {
+      const {locationX, locationY} = event.nativeEvent;
+      const x = (locationX - xMid) / xScale;
+      const y = (yMid - locationY) / yScale;
+
+      setPositions(prevPositions => [
+        ...prevPositions,
+        {x: locationX, y: locationY, repereX: x, repereY: y},
+      ]);
+    }
+  };
+
+  const handleButtonPress = () => {
+    console.log('Button Pressed');
+    // Add your desired functionality here
+  };
 
   // Fonction pour rendre les graduations sur l'axe des x
   const renderXAxisGraduations = () => {
@@ -45,9 +60,10 @@ const DraggableImage: React.FC = () => {
           y2={yMid + 5}
           stroke="black"
           strokeWidth="1"
-        />
+        />,
       );
-      if (i !== 0) { // Skip the origin
+      if (i !== 0) {
+        // Skip the origin
         lines.push(
           <SvgText
             key={`x-text-${i}`}
@@ -55,10 +71,9 @@ const DraggableImage: React.FC = () => {
             y={yMid + 15}
             fontSize="10"
             fill="black"
-            textAnchor="middle"
-          >
+            textAnchor="middle">
             {i}
-          </SvgText>
+          </SvgText>,
         );
       }
     }
@@ -79,9 +94,10 @@ const DraggableImage: React.FC = () => {
           y2={yPos}
           stroke="black"
           strokeWidth="1"
-        />
+        />,
       );
-      if (i !== 0) { // Skip the origin
+      if (i !== 0) {
+        // Skip the origin
         lines.push(
           <SvgText
             key={`y-text-${i}`}
@@ -89,10 +105,9 @@ const DraggableImage: React.FC = () => {
             y={yPos + 3}
             fontSize="10"
             fill="black"
-            textAnchor="middle"
-          >
+            textAnchor="middle">
             {i}
-          </SvgText>
+          </SvgText>,
         );
       }
     }
@@ -100,59 +115,88 @@ const DraggableImage: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Svg height={height} width={width} style={StyleSheet.absoluteFill}>
-        {/* Axe des abscisses */}
-        <Line
-          x1="0"
-          y1={yMid}
-          x2={width}
-          y2={yMid}
-          stroke="black"
-          strokeWidth="2"
-        />
-        {/* Axe des ordonnées */}
-        <Line
-          x1={xMid}
-          y1="0"
-          x2={xMid}
-          y2={height}
-          stroke="black"
-          strokeWidth="2"
-        />
-        {/* Ajouter les graduations sur les axes */}
-        {renderXAxisGraduations()}
-        {renderYAxisGraduations()}
-      </Svg>
-      <View
-        {...panResponder.panHandlers}
-        style={[
-          styles.box,
-          {
-            transform: [{ translateX: position.x }, { translateY: position.y }],
-          },
-        ]}
-      >
-        <Image source={bonhomme1} style={styles.image} />
+    <TouchableWithoutFeedback onPress={handlePress}>
+      <View style={styles.container}>
+        <Svg height={height} width={width} style={StyleSheet.absoluteFill}>
+          {/* Axe des abscisses */}
+          <Line
+            x1="0"
+            y1={yMid}
+            x2={width}
+            y2={yMid}
+            stroke="black"
+            strokeWidth="2"
+          />
+          {/* Axe des ordonnées */}
+          <Line
+            x1={xMid}
+            y1="0"
+            x2={xMid}
+            y2={height}
+            stroke="black"
+            strokeWidth="2"
+          />
+          {/* Ajouter les graduations sur les axes */}
+          {renderXAxisGraduations()}
+          {renderYAxisGraduations()}
+        </Svg>
+        {positions.map((position, index) => (
+          <View
+            key={index}
+            style={[
+              styles.box,
+              {
+                left: position.x - 50,
+                top: position.y - 50,
+              },
+            ]}>
+            <Image source={bonhomme1} style={styles.image} />
+          </View>
+        ))}
+        <View style={styles.positionTextContainer}>
+          {positions.map((position, index) => (
+            <Text key={index} style={styles.positionText}>
+              Image {index + 1} Position: ({position.repereX.toFixed(2)},{' '}
+              {position.repereY.toFixed(2)})
+            </Text>
+          ))}
+        </View>
+        {positions.length === 5 && (
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Button"
+              onPress={async () => {
+                addPosition(positions);
+              }}
+            />
+          </View>
+        )}
       </View>
-      <View style={styles.positionTextContainer}>
-        <Text style={styles.positionText}>
-          Position: ({reperePosition.x.toFixed(2)}, {reperePosition.y.toFixed(2)})
-        </Text>
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
+};
+
+// ajoute un joueur a une partie
+const addPosition = async (positions: {}) => {
+  const email = await new Player().getPlayerEmail();
+  console.log(email);
+  try {
+    PositionRef.add({
+      [email.email]: positions,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   box: {
     width: 100,
     height: 100,
+    position: 'absolute',
   },
   image: {
     width: '100%',
@@ -169,6 +213,11 @@ const styles = StyleSheet.create({
   positionText: {
     fontSize: 16,
   },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: width / 2 - 50,
+  },
 });
 
-export default DraggableImage;
+export default DraggableImages;

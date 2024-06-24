@@ -48,6 +48,20 @@ const Graph: React.FC = () => {
     setImagePosition({ x: imageX, y: imageY });
     setImageSize({ width, height });
   };
+  const onImageLayout2 = (event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    const imageX = (x - xMid) / xScale;
+    const imageY = (yMid - y) / yScale;
+    setImagePosition({ x: imageX, y: imageY });
+    setImageSize({ width, height });
+  };
+  const onImageLayout3 = (event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    const imageX = (x - xMid) / xScale;
+    const imageY = (yMid - y) / yScale;
+    setImagePosition({ x: imageX, y: imageY });
+    setImageSize({ width, height });
+  };
 
   useEffect(() => {
     if (circle) {
@@ -134,6 +148,16 @@ const Graph: React.FC = () => {
           source={bonhomme1}
           style={styles.image}
           onLayout={onImageLayout}
+        />
+        <Image
+          source={bonhomme1}
+          style={styles.image}
+          onLayout={onImageLayout2}
+        />
+        <Image
+          source={bonhomme1}
+          style={styles.image}
+          onLayout={onImageLayout3}
         />
         <Svg height={height} width={width} style={StyleSheet.absoluteFill}>
           {/* Axe des abscisses */}

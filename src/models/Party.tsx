@@ -4,19 +4,16 @@ const PartyRef = firestore().collection('Parties');
 
 class Party {
   emailPlayersInGame: string[];
-  partyInterval: number | null;
   partyCreatorEmail: string;
   partyStatus: Boolean;
   partyId = PartyRef.doc().id;
 
   constructor(
     emailPlayersInGame: string[] = [],
-    partyInterval: number | null = null,
     partyCreatorEmail: string = '',
     partyStatus: Boolean = true
   ) {
     this.emailPlayersInGame = emailPlayersInGame;
-    this.partyInterval = partyInterval;
     this.partyCreatorEmail = partyCreatorEmail;
     this.partyStatus = partyStatus;
   }
@@ -27,7 +24,6 @@ class Party {
       const docRef = await PartyRef.add({
         partyId: this.partyId,
         emailPlayersInGame: this.emailPlayersInGame,
-        partyInterval: this.partyInterval,
         partyCreatorEmail: this.partyCreatorEmail,
         partyStatus: this.partyStatus,
       });
