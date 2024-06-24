@@ -32,7 +32,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         source={require('../assets/de.png')}
         style={styles.image}
       />
-      <Text style={styles.title}>Human War Game</Text>
+      <Text style={styles.title}>🔫Human War Game ☠️⚔️</Text>
       <Text style={styles.subtitle}></Text>
 
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Session')}>
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: 300,
+    width: 350,
     height: 300,
     marginTop: -160,
     marginBottom: 0,
