@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
+import Graph from './Graph';
+import DraggableImages from './Positions';
 
 type RootStackParamList = {
   Game: { partyId: string };
@@ -43,13 +45,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
 
 
   return (
-    <View style={styles.container}>
-        <>
-          <Text style={styles.text}>Bienvenue dans le jeu!</Text>
-          <Text style={styles.text}>Email: {email}</Text>
-          
-        </>
-    </View>
+    <DraggableImages/>
   );
 };
 

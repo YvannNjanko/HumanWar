@@ -8,9 +8,9 @@ import AppNavigator from './src/navigation/AppNavigator';
 function App(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
-      {/* <AppNavigator/> */}
+      <AppNavigator/>
        {/* <Graph /> */}
-      <DraggableImage/>
+      {/* <DraggableImage/> */}
     </SafeAreaView>
   );
 }
