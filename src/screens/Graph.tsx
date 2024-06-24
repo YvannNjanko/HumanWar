@@ -3,7 +3,7 @@ import { View, Dimensions, StyleSheet, TouchableWithoutFeedback, GestureResponde
 import Svg, { Line, Text, Circle } from 'react-native-svg';
 
 const { width, height } = Dimensions.get('window');
-
+ 
 const bonhomme1 = require("../../images/bonhomme.png")
 
 const Graph: React.FC = () => {
