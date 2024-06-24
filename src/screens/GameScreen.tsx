@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Image,
@@ -24,6 +24,7 @@ const bonhomme1 = require('../../images/bonhomme1.png');
 type RootStackParamList = {
   Game: { partyId: string };
   Session: undefined;
+  Play: { partyId: string };
 };
 
 type GameScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Game'>;
@@ -39,6 +40,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
   const [positions, setPositions] = useState<
     { x: number; y: number; repereX: number; repereY: number }[]
   >([]);
+  const [confirmationVisible, setConfirmationVisible] = useState<boolean>(false);
+  const [checkingPositions, setCheckingPositions] = useState<boolean>(true); // State pour activer/désactiver la vérification
   const { partyId } = route.params;
 
   useEffect(() => {
@@ -56,6 +59,43 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
 
     fetchEmail();
   }, []);
+
+  const checkPositions = useCallback(async () => {
+    try {
+      const docRef = PositionRef.doc(partyId);
+      const doc = await docRef.get();
+
+      if (doc.exists) {
+        const data = doc.data();
+        const playerEmails = Object.keys(data || {});
+        if (playerEmails.length === 2) {
+          setConfirmationVisible(true);
+          setTimeout(() => {
+            setConfirmationVisible(false);
+            navigation.navigate('Play', { partyId });
+          }, 8000);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [partyId, navigation]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (checkingPositions) {
+        checkPositions();
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [checkPositions, checkingPositions]);
+
+  useEffect(() => {
+    if (positions.length === 5) {
+      addPosition();
+    }
+  }, [positions]);
 
   const xMid = width / 2;
   const yMid = height / 2;
@@ -213,6 +253,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
             />
           </View>
         )}
+        {confirmationVisible && (
+          <View style={styles.confirmationContainer}>
+            <Text style={styles.confirmationText}>Positions enregistrées ! Redirection vers le jeu...</Text>
+          </View>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -246,6 +291,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     left: width / 2 - 50,
+  },
+  confirmationContainer: {
+    position: 'absolute',
+    top: height / 2 - 50,
+    left: width / 2 - 100,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 20,
+    borderRadius: 10,
+  },
+  confirmationText: {
+    color: 'white',
+    fontSize: 18,
+    textAlign: 'center',
   },
 });
 
