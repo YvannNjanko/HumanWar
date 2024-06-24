@@ -40,7 +40,7 @@ const ListeAttente: React.FC<Props> = ({navigation, route}) => {
             console.log('yesss navigation');
             navigation.navigate('Game', { partyId: partyId })
           } else {
-            console.log('noooo navigation');
+            console.log('nobooo navigation');
             // navigation.navigate('ListeAttente', { partyId: partyId })
           }
         }

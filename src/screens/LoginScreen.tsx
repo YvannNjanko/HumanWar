@@ -67,7 +67,7 @@ const LoginScreen: React.FC<Props> = ({navigation}) => {
       />
       
       <TouchableOpacity style={styles.button} onPress={signInWithGoogle}>
-  <Icon name="google" size={20} color="white"/>
+  <Icon name="google" size={20} color="red"/>
   <Text style={styles.buttonText}>Sign in With Google</Text>
 </TouchableOpacity>
 
