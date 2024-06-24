@@ -30,7 +30,7 @@ const SessionScreen: React.FC<Props> = ({ navigation }) => {
         const player = JSON.parse(playerString);
         const email = player.email;
 
-        const party = new Party([email], 100, email, false);
+        const party = new Party([email], email, false);
         const createdParty = await party.addParty();
         if (createdParty && createdParty.id) {
           return createdParty.id;
