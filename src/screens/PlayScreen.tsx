@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 const bonhomme1 = require('../../images/bonhomme1.png');
+const redDot = require('../../images/red-dot.png'); // Image du point rouge
 
 const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ route }) => {
   const { partyId } = route.params;
@@ -12,6 +13,7 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
     { email: string; positions: { x: number; y: number; repereX: number; repereY: number }[] }[]
   >([]);
   const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+  const [highlightedPosition, setHighlightedPosition] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const fetchCurrentUserEmail = async () => {
@@ -50,14 +52,21 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
     fetchPositions();
   }, [partyId]);
 
+  const handleImagePress = (position: { x: number; y: number }) => {
+    // Mettre à jour l'état pour afficher le point rouge sur l'image touchée
+    setHighlightedPosition(position);
+    console.log('Image touched!');
+  };
+
   return (
     <View style={styles.container}>
       {positions.map(({ email, positions: playerPositions }, index) => (
         email !== currentUserEmail && (
           <React.Fragment key={index}>
             {playerPositions.map((position, posIndex) => (
-              <View
+              <TouchableOpacity
                 key={posIndex}
+                onPress={() => handleImagePress(position)} // Appel de la fonction handleImagePress avec la position
                 style={[
                   styles.box,
                   {
@@ -66,7 +75,10 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
                   },
                 ]}>
                 <Image source={bonhomme1} style={styles.image} />
-              </View>
+                {highlightedPosition && highlightedPosition.x === position.x && highlightedPosition.y === position.y && (
+                  <Image source={redDot} style={styles.redDot} /> // Affichage conditionnel du point rouge
+                )}
+              </TouchableOpacity>
             ))}
           </React.Fragment>
         )
@@ -88,6 +100,14 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  redDot: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    top: '50%', // Centré verticalement sur l'image
+    left: '50%', // Centré horizontalement sur l'image
+    transform: [{ translateX: -5 }, { translateY: -5 }], // Centrage du point rouge
   },
 });
 
