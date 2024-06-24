@@ -2,13 +2,15 @@ import React from 'react';
 import { Button, SafeAreaView, StyleSheet } from 'react-native';
 import Graph from './src/screens/Graph';
 import DraggableImage from './src/screens/Positions';
+import AppNavigator from './src/navigation/AppNavigator';
 
 
 function App(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
-      {/* <Graph /> */}
-      <DraggableImage/>
+      <AppNavigator/>
+      {/* <Graph />
+      <DraggableImage/> */}
     </SafeAreaView>
   );
 }
