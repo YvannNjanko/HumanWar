@@ -14,6 +14,7 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
   >([]);
   const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
   const [highlightedPosition, setHighlightedPosition] = useState<{ x: number; y: number } | null>(null);
+  const [touchedPositions, setTouchedPositions] = useState<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
     const fetchCurrentUserEmail = async () => {
@@ -55,7 +56,9 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
   const handleImagePress = (position: { x: number; y: number }) => {
     // Mettre à jour l'état pour afficher le point rouge sur l'image touchée
     setHighlightedPosition(position);
-    console.log('Image touched!');
+
+    // Ajouter la position touchée à la liste des positions touchées
+    setTouchedPositions((prevPositions) => [...prevPositions, position]);
   };
 
   return (
@@ -63,23 +66,28 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
       {positions.map(({ email, positions: playerPositions }, index) => (
         email !== currentUserEmail && (
           <React.Fragment key={index}>
-            {playerPositions.map((position, posIndex) => (
-              <TouchableOpacity
-                key={posIndex}
-                onPress={() => handleImagePress(position)} // Appel de la fonction handleImagePress avec la position
-                style={[
-                  styles.box,
-                  {
-                    left: position.x - 50,
-                    top: position.y - 50,
-                  },
-                ]}>
-                <Image source={bonhomme1} style={styles.image} />
-                {highlightedPosition && highlightedPosition.x === position.x && highlightedPosition.y === position.y && (
-                  <Image source={redDot} style={styles.redDot} /> // Affichage conditionnel du point rouge
-                )}
-              </TouchableOpacity>
-            ))}
+            {playerPositions.map((position, posIndex) => {
+              const isTouched = touchedPositions.some(
+                (touchedPos) => touchedPos.x === position.x && touchedPos.y === position.y
+              );
+              return (
+                <TouchableOpacity
+                  key={posIndex}
+                  onPress={() => handleImagePress(position)} // Appel de la fonction handleImagePress avec la position
+                  style={[
+                    styles.box,
+                    {
+                      left: position.x - 50,
+                      top: position.y - 50,
+                    },
+                  ]}>
+                  {!isTouched && <Image source={bonhomme1} style={styles.image} />}
+                  {highlightedPosition && highlightedPosition.x === position.x && highlightedPosition.y === position.y && (
+                    <Image source={redDot} style={styles.redDot} /> // Affichage conditionnel du point rouge
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </React.Fragment>
         )
       ))}
