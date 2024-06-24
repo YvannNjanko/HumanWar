@@ -90,18 +90,23 @@ const PlayScreen: React.FC<{route: {params: {partyId: string}}}> = ({
 
     const newCircle = {cx: x, cy: y, r: 0.5};
     setCircle(newCircle);
-
-    const imageXStart = imagePosition.x;
-    const imageXEnd = imagePosition.x + imageSize.width / xScale;
-    const imageYStart = imagePosition.y;
-    const imageYEnd = imagePosition.y - imageSize.height / yScale;
-    console.log('Y', imageYStart, imageYEnd);
-    console.log('X', imageXStart, imageXEnd);
-    console.log(
-      estEntre(imageXStart, imageXEnd, x, imageYStart, imageYEnd, y)
-        ? 'Image touchée'
-        : 'Image non touchée',
-    );
+    positions.map(
+      ({email, positions: playerPositions}, index) =>{
+        playerPositions.map((position, posIndex) =>{
+          
+          const imageXStart:number = position.repereX;
+          const imageXEnd = position.repereX + imageSize.width / xScale;
+          const imageYStart = position.repereY;
+          const imageYEnd = position.repereY - imageSize.height / yScale;
+          console.log('Y', imageYStart, imageYEnd);
+          console.log('X', imageXStart, imageXEnd);
+          console.log(
+            estEntre(imageXStart, imageXEnd, x, imageYStart, imageYEnd, y)
+              ? 'Image touchée'
+              : 'Image non touchée',
+          );
+        })
+      })
   };
 
   function estEntre(
@@ -288,8 +293,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     position: 'absolute',
-    backgroundColor: 'red',
-  },
+    backgroundColor: 'red',  },
   image: {
     width: '100%',
     height: '100%',
