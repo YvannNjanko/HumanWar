@@ -57,6 +57,15 @@ const SessionScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.buttonText}>Créer une Partie</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.button} onPress={async () => {
+        const id = await addParty();
+        if (id) {
+          navigation.navigate('LocalScreen', { partyId: id });
+        }
+      }}>
+        <Text style={styles.buttonText}>Jouer en Local</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SelectSession')}>
         <Text style={styles.buttonText}>Rejoindre une Partie</Text>
       </TouchableOpacity>

@@ -7,14 +7,13 @@ import {
   TouchableWithoutFeedback,
   Text,
   Button,
+  Alert,
 } from 'react-native';
 import Svg, { Line, Text as SvgText } from 'react-native-svg';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-
 import { Player } from '../models/Player';
 
 const PositionRef = firestore().collection('Position');
@@ -27,21 +26,25 @@ type RootStackParamList = {
   Play: { partyId: string };
 };
 
-type GameScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Game'>;
-type GameScreenRouteProp = RouteProp<RootStackParamList, 'Game'>;
+type LocalScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Game'>;
+type LocalScreenRouteProp = RouteProp<RootStackParamList, 'Game'>;
 
-type GameScreenProps = {
-  navigation: GameScreenNavigationProp;
-  route: GameScreenRouteProp;
+type LocalScreenProps = {
+  navigation: LocalScreenNavigationProp;
+  route: LocalScreenRouteProp;
 };
 
-const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
+const LocalScreen: React.FC<LocalScreenProps> = ({ route, navigation }) => {
   const [email, setEmail] = useState<string>('');
   const [positions, setPositions] = useState<
     { x: number; y: number; repereX: number; repereY: number }[]
   >([]);
   const [confirmationVisible, setConfirmationVisible] = useState<boolean>(false);
-  const [checkingPositions, setCheckingPositions] = useState<boolean>(true); // State pour activer/désactiver la vérification
+  const [checkingPositions, setCheckingPositions] = useState<boolean>(true);
+  const [systemEmail, setSystemEmail] = useState<string>('');
+  const [systemPositions, setSystemPositions] = useState<
+    { x: number; y: number; repereX: number; repereY: number }[]
+  >([]);
   const { partyId } = route.params;
 
   useEffect(() => {
@@ -92,10 +95,59 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
   }, [checkPositions, checkingPositions]);
 
   useEffect(() => {
-    if (positions.length === 5) {
-      addPosition();
+    const generateSystemEmail = () => {
+      const randomEmail = `system_${Math.random().toString(36).substring(7)}@example.com`.replace('.', ',');
+      setSystemEmail(randomEmail);
+    };
+
+    generateSystemEmail();
+  }, []);
+
+  useEffect(() => {
+    const generateSystemPositions = () => {
+      const generatedPositions = [];
+      for (let i = 0; i < 5; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const repereX = (x - width / 2) / (width / 20);
+        const repereY = (height / 2 - y) / (height / 20);
+        generatedPositions.push({ x, y, repereX, repereY });
+      }
+      setSystemPositions(generatedPositions);
+    };
+
+    if (systemEmail) {
+      generateSystemPositions();
     }
-  }, [positions]);
+  }, [systemEmail]);
+
+  useEffect(() => {
+    const addSystemPositions = async () => {
+      if (systemPositions.length === 5) {
+        try {
+          const docRef = PositionRef.doc(partyId);
+          const doc = await docRef.get();
+
+          if (doc.exists) {
+            const data = doc.data();
+            const updatedData = {
+              ...data,
+              [systemEmail]: systemPositions,
+            };
+            await docRef.update(updatedData);
+          } else {
+            await docRef.set({
+              [systemEmail]: systemPositions,
+            });
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+
+    addSystemPositions();
+  }, [systemPositions, systemEmail, partyId]);
 
   const xMid = width / 2;
   const yMid = height / 2;
@@ -237,10 +289,28 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
             <Image source={bonhomme1} style={styles.image} />
           </View>
         ))}
+        {systemPositions.map((position, index) => (
+          <View key={`system-${index}`} style={[
+            styles.box,
+            {
+              left: position.x - 50,
+              top: position.y - 50,
+              opacity: 0, // Masquer les images du système
+            },
+          ]}>
+            <Image source={bonhomme1} style={styles.image} />
+          </View>
+        ))}
         <View style={styles.positionTextContainer}>
           {positions.map((position, index) => (
             <Text key={index} style={styles.positionText}>
               Image {index + 1} Position: ({position.repereX.toFixed(2)},{' '}
+              {position.repereY.toFixed(2)})
+            </Text>
+          ))}
+          {systemPositions.map((position, index) => (
+            <Text key={`system-${index}`} style={styles.positionText}>
+              Système {index + 1} Position: ({position.repereX.toFixed(2)},{' '}
               {position.repereY.toFixed(2)})
             </Text>
           ))}
@@ -255,7 +325,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
         )}
         {confirmationVisible && (
           <View style={styles.confirmationContainer}>
-            <Text style={styles.confirmationText}>Positions enregistrées!
+                        <Text style={styles.confirmationText}>Positions enregistrées!
                Redirection vers le jeu...</Text>
           </View>
         )}
@@ -308,4 +378,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GameScreen;
+export default LocalScreen;
