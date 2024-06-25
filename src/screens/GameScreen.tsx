@@ -248,7 +248,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ route, navigation }) => {
         {positions.length === 5 && (
           <View style={styles.buttonContainer}>
             <Button
-              title="Button"
+              title="Valider"
               onPress={addPosition}
             />
           </View>
