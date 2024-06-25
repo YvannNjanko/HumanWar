@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Image, StyleSheet, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { Rank } from '../models/Rank';
 
 const { width, height } = Dimensions.get('window');
 const bonhomme1 = require('../../images/bonhomme1.png');
-const redDot = require('../../images/red-dot.png'); // Image du point rouge
 
 const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ route }) => {
   const { partyId } = route.params;
@@ -13,8 +14,11 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
     { email: string; positions: { x: number; y: number; repereX: number; repereY: number }[] }[]
   >([]);
   const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
-  const [highlightedPosition, setHighlightedPosition] = useState<{ x: number; y: number } | null>(null);
-  const [touchedPositions, setTouchedPositions] = useState<{ x: number; y: number }[]>([]);
+  const [visiblePositions, setVisiblePositions] = useState<{ x: number; y: number }[]>([]);
+  const [gameFinished, setGameFinished] = useState<boolean>(false);
+  const [winner, setWinner] = useState<string>('');
+  const navigation = useNavigation();
+  const rank = new Rank(partyId);
 
   useEffect(() => {
     const fetchCurrentUserEmail = async () => {
@@ -53,12 +57,48 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
     fetchPositions();
   }, [partyId]);
 
-  const handleImagePress = (position: { x: number; y: number }) => {
-    // Mettre à jour l'état pour afficher le point rouge sur l'image touchée
-    setHighlightedPosition(position);
+  useEffect(() => {
+    const checkGameStatus = async () => {
+      try {
+        const isGameFinished = await rank.getGameStatus();
+        const gameWinner = await rank.getGameWinner();
+        setGameFinished(isGameFinished);
+        setWinner(gameWinner);
+        if (isGameFinished) {
+          if (gameWinner !== currentUserEmail) {
+            Alert.alert('You lose!');
+          }
+          setTimeout(() => {
+            navigation.navigate('Session');
+          }, 2000);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-    // Ajouter la position touchée à la liste des positions touchées
-    setTouchedPositions((prevPositions) => [...prevPositions, position]);
+    const interval = setInterval(checkGameStatus, 2000);
+    return () => clearInterval(interval);
+  }, [rank, navigation, currentUserEmail]);
+
+  const handleImagePress = async (position: { x: number; y: number }) => {
+    try {
+      setVisiblePositions((prevPositions) => [...prevPositions, position]);
+
+      const currentScore = await rank.getPlayerScores();
+      const newScore = (currentScore[currentUserEmail] || 0) + 1;
+      await rank.updatePlayerScore(currentUserEmail, newScore);
+
+      if (newScore >= 5) {
+        await rank.updateGameStatus(true, currentUserEmail);
+        Alert.alert('You win!');
+        setTimeout(() => {
+          navigation.navigate('Session');
+        }, 2000);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -67,24 +107,22 @@ const PlayScreen: React.FC<{ route: { params: { partyId: string } } }> = ({ rout
         email !== currentUserEmail && (
           <React.Fragment key={index}>
             {playerPositions.map((position, posIndex) => {
-              const isTouched = touchedPositions.some(
-                (touchedPos) => touchedPos.x === position.x && touchedPos.y === position.y
+              const isVisible = visiblePositions.some(
+                (visiblePos) => visiblePos.x === position.x && visiblePos.y === position.y
               );
               return (
                 <TouchableOpacity
                   key={posIndex}
-                  onPress={() => handleImagePress(position)} // Appel de la fonction handleImagePress avec la position
+                  onPress={() => handleImagePress(position)}
                   style={[
                     styles.box,
                     {
                       left: position.x - 50,
                       top: position.y - 50,
+                      opacity: isVisible ? 1 : 0,
                     },
                   ]}>
-                  {!isTouched && <Image source={bonhomme1} style={styles.image} />}
-                  {highlightedPosition && highlightedPosition.x === position.x && highlightedPosition.y === position.y && (
-                    <Image source={redDot} style={styles.redDot} /> // Affichage conditionnel du point rouge
-                  )}
+                  <Image source={bonhomme1} style={styles.image} />
                 </TouchableOpacity>
               );
             })}
@@ -108,14 +146,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-  },
-  redDot: {
-    position: 'absolute',
-    width: 10,
-    height: 10,
-    top: '50%', // Centré verticalement sur l'image
-    left: '50%', // Centré horizontalement sur l'image
-    transform: [{ translateX: -5 }, { translateY: -5 }], // Centrage du point rouge
   },
 });
 
