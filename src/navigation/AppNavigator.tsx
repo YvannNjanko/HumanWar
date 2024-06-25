@@ -11,6 +11,7 @@ import GameScreen from '../screens/GameScreen';
 import PlayScreen from '../screens/PlayScreen';
 import RankScreen from '../screens/RankScreen';
 import LocalScreen from '../screens/LocalScreen';
+import PlayLocalScreen from '../screens/PlayLocalScreen';
 
 
 export type RootStackParamList = {
@@ -21,6 +22,7 @@ export type RootStackParamList = {
   Lobby: undefined;
   LobbyScreen: { partyId: string };
   LocalScreen: { partyId: string };
+  PlayLocalScreen: { partyId: string };
   SalleAttente: undefined;
   Game: { partyId: string };
   Rank: undefined;
@@ -42,6 +44,7 @@ const AppNavigator = () => {
         <Stack.Screen name="SelectSession" component={JoinSessionScreen} />
         <Stack.Screen name="Game" component={GameScreen} />
         <Stack.Screen name="Play" component={PlayScreen} />
+        <Stack.Screen name="PlayLocalScreen" component={PlayLocalScreen} />
         <Stack.Screen name="Rank" component={RankScreen} />
         <Stack.Screen name="LocalScreen" component={LocalScreen} />
       </Stack.Navigator>

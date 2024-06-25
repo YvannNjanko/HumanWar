@@ -75,7 +75,7 @@ const LocalScreen: React.FC<LocalScreenProps> = ({ route, navigation }) => {
           setConfirmationVisible(true);
           setTimeout(() => {
             setConfirmationVisible(false);
-            navigation.navigate('Play', { partyId });
+            navigation.navigate('PlayLocalScreen', { partyId });
           }, 8000);
         }
       }
