@@ -62,6 +62,16 @@ const SessionScreen: React.FC<Props> = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={async () => {
+        const id = await addParty();
+        if (id) {
+          navigation.navigate('Rank', { partyId: id });
+        }
+      }}>
+        <Text style={styles.buttonText}>Classement</Text>
+      </TouchableOpacity>
+
+
+      <TouchableOpacity style={styles.button} onPress={async () => {
         await AsyncStorage.removeItem('Player');
         navigation.navigate('Login');
       }}>
@@ -79,7 +89,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   image: {
-    width: 450,
+    width: 400,
     height: 350,
     marginTop: -150,
     marginBottom: 0,

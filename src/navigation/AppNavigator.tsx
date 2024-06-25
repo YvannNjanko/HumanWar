@@ -9,6 +9,7 @@ import ListeAttente from '../screens/ListeAttente';
 import JoinSessionScreen from '../screens/JoinSessionScreen';
 import GameScreen from '../screens/GameScreen';
 import PlayScreen from '../screens/PlayScreen';
+import RankScreen from '../screens/RankScreen';
 
 
 export type RootStackParamList = {
@@ -39,6 +40,7 @@ const AppNavigator = () => {
         <Stack.Screen name="SelectSession" component={JoinSessionScreen} />
         <Stack.Screen name="Game" component={GameScreen} />
         <Stack.Screen name="Play" component={PlayScreen} />
+        <Stack.Screen name="Rank" component={RankScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
