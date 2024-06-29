@@ -82,23 +82,38 @@ const PlayLocalScreen: React.FC<{ route: { params: { partyId: string } } }> = ({
     return () => clearInterval(interval);
   }, [rank, navigation, currentUserEmail]);
 
-  const handleImagePress = async (position: { x: number; y: number }) => {
-    try {
-      // Vérifier si le joueur a touché une image de l'adversaire
-      const isOpponentImage = positions.some(
-        (player) => player.email !== currentUserEmail && player.positions.some(
-          (pos) => pos.x === position.x && pos.y === position.y
-        )
-      );
-
-      if (isOpponentImage) {
-        // Si oui, signaler et passer au tour du système
-        setVisiblePositions((prevPositions) => [...prevPositions, position]);
-        Alert.alert('You hit opponent!');
-      } else {
-        Alert.alert('You missed!');
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (currentRound === 1) {
+        handleImagePress(null); // null to indicate no player action
+      } else if (currentRound === 2) {
+        handleSystemTurn();
       }
-      setCurrentRound(2); // Tour du système
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [currentRound]);
+
+  const handleImagePress = async (position: { x: number; y: number } | null) => {
+    try {
+      if (position) {
+        const isOpponentImage = positions.some(
+          (player) =>
+            player.email !== currentUserEmail &&
+            player.positions.some((pos) => pos.x === position.x && pos.y === position.y)
+        );
+
+        if (isOpponentImage) {
+          setVisiblePositions((prevPositions) => [...prevPositions, position]);
+          Alert.alert('You hit opponent!');
+        } else {
+          Alert.alert('You missed!');
+        }
+      } else {
+        Alert.alert('Time is up! Passing turn to system.');
+      }
+
+      setCurrentRound(2);
       setTimeout(handleSystemTurn, 1000);
     } catch (error) {
       console.log(error);
@@ -107,27 +122,26 @@ const PlayLocalScreen: React.FC<{ route: { params: { partyId: string } } }> = ({
 
   const handleSystemTurn = async () => {
     try {
-      // Générer des coordonnées aléatoires pour le système
       const randomX = Math.floor(Math.random() * width);
       const randomY = Math.floor(Math.random() * height);
 
-      // Vérifier si le système touche une image du joueur
       const isPlayerImage = positions.some(
-        (player) => player.email === currentUserEmail && player.positions.some(
-          (pos) => pos.x === randomX && pos.y === randomY
-        )
+        (player) =>
+          player.email === currentUserEmail &&
+          player.positions.some((pos) => pos.x === randomX && pos.y === randomY)
       );
 
       if (isPlayerImage) {
-        // Si oui, signaler et passer au tour du joueur
         Alert.alert('System hit you!');
       } else {
         Alert.alert('System missed!');
       }
 
-      // Mettre à jour les positions visibles pour afficher les interactions
-      setVisiblePositions((prevPositions) => [...prevPositions, { x: randomX, y: randomY }]);
-      setCurrentRound(1); // Tour du joueur
+      setVisiblePositions((prevPositions) => [
+        ...prevPositions,
+        { x: randomX, y: randomY },
+      ]);
+      setCurrentRound(1);
     } catch (error) {
       console.log(error);
     }
@@ -135,8 +149,8 @@ const PlayLocalScreen: React.FC<{ route: { params: { partyId: string } } }> = ({
 
   return (
     <View style={styles.container}>
-      {positions.map(({ email, positions: playerPositions }, index) => (
-        email !== currentUserEmail && (
+      {positions.map(({ email, positions: playerPositions }, index) =>
+        email !== currentUserEmail ? (
           <React.Fragment key={index}>
             {playerPositions.map((position, posIndex) => {
               const isVisible = visiblePositions.some(
@@ -153,14 +167,15 @@ const PlayLocalScreen: React.FC<{ route: { params: { partyId: string } } }> = ({
                       top: position.y - 50,
                       opacity: isVisible ? 1 : 0,
                     },
-                  ]}>
+                  ]}
+                >
                   <Image source={bonhomme1} style={styles.image} />
                 </TouchableOpacity>
               );
             })}
           </React.Fragment>
-        )
-      ))}
+        ) : null
+      )}
     </View>
   );
 };
